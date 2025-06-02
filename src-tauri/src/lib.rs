@@ -4,12 +4,11 @@ use tauri::{
     tray::TrayIconBuilder,
     Manager,
 };
-
-
+use tauri_plugin_global_shortcut::{Code, GlobalShortcutExt, Modifiers, Shortcut, ShortcutState};
+mod settings;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
         .plugin(tauri_plugin_opener::init())
         // .plugin(tauri_plugin_global_shortcut::p)
         .invoke_handler(tauri::generate_handler![screenshot::screenshot])
@@ -40,8 +39,26 @@ pub fn run() {
                 }
                 _ => {}
             });
-            // This For the short cut for open the image
+            let ctrl_d = Shortcut::new(Some(Modifiers::CONTROL), Code::KeyD);
 
+            // This For the shortcut for open the image
+            let _ = app.handle().plugin(
+                tauri_plugin_global_shortcut::Builder::new()
+                    .with_shortcut("ctrl+d")
+                    .unwrap()
+                    .with_handler(move |_app, shortcut, event| {
+                    if shortcut == &ctrl_d {
+                            if let ShortcutState::Pressed = event.state() {
+                                let app_handle = _app.app_handle();
+                                if let Some(win) = app_handle.get_webview_window("test") {
+                                    let _ = win.show();
+                                }
+                            }
+                        }
+                    })
+                    .build(),
+            );
+            let _ = app.global_shortcut().register(ctrl_d);
             Ok(())
         })
         .run(tauri::generate_context!())

@@ -67,15 +67,14 @@ export default function Overlay() {
     }, [isDragging, isCapturing]);
 
     // Process AI response
-    const processWithAI = useCallback(async (imageData: any) => {
+    const processWithAI = useCallback(async (text: any) => {
         setAiResponse({ text: '', timestamp: new Date(), loading: true });
         setShowAiPanel(true);
 
         try {
             // Process AI in background - don't block the UI
-            const response = await invoke("process_with_ai", { imageData });
             setAiResponse({
-                text: response as string,
+                text: text as string,
                 timestamp: new Date(),
                 loading: false
             });
